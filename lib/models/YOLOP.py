@@ -505,10 +505,10 @@ class MCnet(nn.Module):
     def __init__(self, block_cfg, **kwargs):
         super(MCnet, self).__init__()
         layers, save= [], []
-        self.nc = 1
+        self.nc = 1 #only one class, car?
         self.detector_index = -1
-        self.det_out_idx = block_cfg[0][0]
-        self.seg_out_idx = block_cfg[0][1:]
+        self.det_out_idx = block_cfg[0][0] #24
+        self.seg_out_idx = block_cfg[0][1:] #33, 42
         
 
         # Build model
@@ -523,7 +523,7 @@ class MCnet(nn.Module):
         assert self.detector_index == block_cfg[0][0]
 
         self.model, self.save = nn.Sequential(*layers), sorted(save)
-        self.names = [str(i) for i in range(self.nc)]
+        self.names = [str(i) for i in range(self.nc)]#['0']
 
         # set stride、anchor for detector
         Detector = self.model[self.detector_index]  # detector
@@ -532,11 +532,11 @@ class MCnet(nn.Module):
             # for x in self.forward(torch.zeros(1, 3, s, s)):
             #     print (x.shape)
             with torch.no_grad():
-                model_out = self.forward(torch.zeros(1, 3, s, s))
+                model_out = self.forward(torch.zeros(1, 3, s, s))#3*128*128
                 detects, _, _= model_out
-                Detector.stride = torch.tensor([s / x.shape[-2] for x in detects])  # forward
+                Detector.stride = torch.tensor([s / x.shape[-2] for x in detects])  # forward stride=[ 8., 16., 32.]
             # print("stride"+str(Detector.stride ))
-            Detector.anchors /= Detector.stride.view(-1, 1, 1)  # Set the anchors for the corresponding scale
+            Detector.anchors /= Detector.stride.view(-1, 1, 1)  # size[3, 3, 2] Set the anchors for the corresponding scale
             check_anchor_order(Detector)
             self.stride = Detector.stride
             self._initialize_biases()
@@ -551,15 +551,24 @@ class MCnet(nn.Module):
         LL_fmap = []
         for i, block in enumerate(self.model):
             if block.from_ != -1:
+                #if not from previous layer, the x value should be from other layers in cache
                 x = cache[block.from_] if isinstance(block.from_, int) else [x if j == -1 else cache[j] for j in block.from_]       #calculate concat detect
+            
+            # run forward for each module
             x = block(x)
+
             if i in self.seg_out_idx:     #save driving area segment result
                 m=nn.Sigmoid()
                 out.append(m(x))
             if i == self.detector_index:
                 det_out = x
+            
+            #if this layer's out is in the save list, save the value to cache
             cache.append(x if block.index in self.save else None)
-        out.insert(0,det_out)
+        
+        #out is the array (different from YOLOv5 just return x)
+        #out position 0 is the detection out, other two results are the segmentation output
+        out.insert(0,det_out) 
         return out
             
     

@@ -111,7 +111,7 @@ def main():
     device = select_device(logger, batch_size=cfg.TRAIN.BATCH_SIZE_PER_GPU* len(cfg.GPUS)) if not cfg.DEBUG \
         else select_device(logger, 'cpu')
 
-    if args.local_rank != -1:
+    if args.local_rank != -1:#did not run in P100 GPU
         assert torch.cuda.device_count() > args.local_rank
         torch.cuda.set_device(args.local_rank)
         device = torch.device('cuda', args.local_rank)
@@ -312,10 +312,10 @@ def main():
             logger.info(str(det.anchors))
 
     # training
-    num_warmup = max(round(cfg.TRAIN.WARMUP_EPOCHS * num_batch), 1000)
+    num_warmup = max(round(cfg.TRAIN.WARMUP_EPOCHS * num_batch), 1000)#4377
     scaler = amp.GradScaler(enabled=device.type != 'cpu')
     print('=> start training...')
-    for epoch in range(begin_epoch+1, cfg.TRAIN.END_EPOCH+1):
+    for epoch in range(begin_epoch+1, cfg.TRAIN.END_EPOCH+1):#240 
         if rank != -1:
             train_loader.sampler.set_epoch(epoch)
         # train for one epoch
