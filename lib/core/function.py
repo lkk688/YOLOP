@@ -66,7 +66,7 @@ def train(cfg, train_loader, model, criterion, optimizer, scaler, epoch, num_bat
                     x['momentum'] = np.interp(num_iter, xi, [cfg.TRAIN.WARMUP_MOMENTUM, cfg.TRAIN.MOMENTUM])
 
         data_time.update(time.time() - start)
-        if not cfg.DEBUG:
+        if not cfg.DEBUG:#input size [48, 3, 384, 640]
             input = input.to(device, non_blocking=True)
             assign_target = []
             for tgt in target:
@@ -97,7 +97,7 @@ def train(cfg, train_loader, model, criterion, optimizer, scaler, epoch, num_bat
             if i % cfg.PRINT_FREQ == 0:
                 msg = 'Epoch: [{0}][{1}/{2}]\t' \
                       'Time {batch_time.val:.3f}s ({batch_time.avg:.3f}s)\t' \
-                      'Speed {speed:.1f} samples/s\t' \
+                      'Speed {speed:.3f} samples/s\t' \
                       'Data {data_time.val:.3f}s ({data_time.avg:.3f}s)\t' \
                       'Loss {loss.val:.5f} ({loss.avg:.5f})'.format(
                           epoch, i, len(train_loader), batch_time=batch_time,
