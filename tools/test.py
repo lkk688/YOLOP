@@ -31,12 +31,12 @@ def parse_args():
     parser.add_argument('--modelDir',
                         help='model directory',
                         type=str,
-                        default='')
+                        default='runs/BddDataset/_2021-11-01-16-37/')
     parser.add_argument('--logDir',
                         help='log directory',
                         type=str,
-                        default='runs/')
-    parser.add_argument('--weights', nargs='+', type=str, default='/data2/zwt/wd/YOLOP/runs/BddDataset/detect_and_segbranch_whole/epoch-169.pth', help='model.pth path(s)')
+                        default='runs/BddDataset/_2021-11-01-16-37/')
+    parser.add_argument('--weights', nargs='+', type=str, default='runs/BddDataset/_2021-11-01-16-37/epoch-43.pth', help='model.pth path(s)')
     parser.add_argument('--conf_thres', type=float, default=0.001, help='object confidence threshold')
     parser.add_argument('--iou_thres', type=float, default=0.6, help='IOU threshold for NMS')
     args = parser.parse_args()
@@ -71,7 +71,7 @@ def main():
         else select_device(logger, 'cpu')
     # device = select_device(logger, 'cpu')
 
-    model = get_net(cfg)
+    model = get_net(cfg)#Detect in 24
     print("finish build model")
     
     # define loss function (criterion) and optimizer

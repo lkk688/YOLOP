@@ -181,14 +181,15 @@ def get_loss(cfg, device):
     -loss: (MultiHeadLoss)
 
     """
-    # class loss criteria
-    BCEcls = nn.BCEWithLogitsLoss(pos_weight=torch.Tensor([cfg.LOSS.CLS_POS_WEIGHT])).to(device)
+    #nn.BCEWithLogitsLoss: combines a Sigmoid layer and the BCELoss in one single class
+    # class loss criteria 
+    BCEcls = nn.BCEWithLogitsLoss(pos_weight=torch.Tensor([cfg.LOSS.CLS_POS_WEIGHT])).to(device)#weight=1
     # object loss criteria
     BCEobj = nn.BCEWithLogitsLoss(pos_weight=torch.Tensor([cfg.LOSS.OBJ_POS_WEIGHT])).to(device)
     # segmentation loss criteria
     BCEseg = nn.BCEWithLogitsLoss(pos_weight=torch.Tensor([cfg.LOSS.SEG_POS_WEIGHT])).to(device)
     # Focal loss
-    gamma = cfg.LOSS.FL_GAMMA  # focal loss gamma
+    gamma = cfg.LOSS.FL_GAMMA  # focal loss gamma=0
     if gamma > 0:
         BCEcls, BCEobj = FocalLoss(BCEcls, gamma), FocalLoss(BCEobj, gamma)
 

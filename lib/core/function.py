@@ -158,7 +158,7 @@ def validate(epoch,config, val_loader, val_dataset, model, criterion, output_dir
 
     seen =  0 
     confusion_matrix = ConfusionMatrix(nc=model.nc) #detector confusion matrix
-    da_metric = SegmentationMetric(config.num_seg_class) #segment confusion matrix    
+    da_metric = SegmentationMetric(config.num_seg_class) #segment confusion matrix, num_seg_class=2
     ll_metric = SegmentationMetric(2) #segment confusion matrix
 
     names = {k: v for k, v in enumerate(model.names if hasattr(model, 'names') else model.module.names)}
@@ -209,9 +209,9 @@ def validate(epoch,config, val_loader, val_dataset, model, criterion, output_dir
             inf_out,train_out = det_out
 
             #driving area segment evaluation
-            _,da_predict=torch.max(da_seg_out, 1)
-            _,da_gt=torch.max(target[1], 1)
-            da_predict = da_predict[:, pad_h:height-pad_h, pad_w:width-pad_w]
+            _,da_predict=torch.max(da_seg_out, 1)#[24, 2, 384, 640] ->[24, 384, 640]
+            _,da_gt=torch.max(target[1], 1) #[24, 2, 384, 640]->[24, 384, 640]
+            da_predict = da_predict[:, pad_h:height-pad_h, pad_w:width-pad_w]#[24, 360, 640]
             da_gt = da_gt[:, pad_h:height-pad_h, pad_w:width-pad_w]
 
             da_metric.reset()
@@ -226,9 +226,9 @@ def validate(epoch,config, val_loader, val_dataset, model, criterion, output_dir
 
             #lane line segment evaluation
             _,ll_predict=torch.max(ll_seg_out, 1)
-            _,ll_gt=torch.max(target[2], 1)
+            _,ll_gt=torch.max(target[2], 1)#[24, 384, 640]
             ll_predict = ll_predict[:, pad_h:height-pad_h, pad_w:width-pad_w]
-            ll_gt = ll_gt[:, pad_h:height-pad_h, pad_w:width-pad_w]
+            ll_gt = ll_gt[:, pad_h:height-pad_h, pad_w:width-pad_w]#[24, 360, 640]
 
             ll_metric.reset()
             ll_metric.addBatch(ll_predict.cpu(), ll_gt.cpu())
